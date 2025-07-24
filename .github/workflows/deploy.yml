@@ -1,10 +1,11 @@
 name: Deploy Dashboard to New Relic
 
 on:
+  workflow_dispatch:  # ✅ Enables manual run with branch selection
   push:
     branches:
-      - 'customer/**'
-  workflow_dispatch:
+      - main
+      - 'customer/**'  # ✅ So it also runs automatically on customer branches
 
 jobs:
   deploy:
