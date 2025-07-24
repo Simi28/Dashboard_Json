@@ -1,11 +1,11 @@
-name: Deploy Dashboard to New Relic
+name: Deploy Dashboard via NerdGraph
 
 on:
-  workflow_dispatch:  # ✅ Enables manual trigger with branch selection
+  workflow_dispatch:
   push:
     branches:
       - main
-      - 'customer/**'  # ✅ Auto-run for any customer branch
+      - 'customer/**'
 
 jobs:
   deploy:
@@ -19,20 +19,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Replace placeholders and wrap in dashboard object
+      - name: Build NerdGraph mutation
         run: |
           mkdir -p rendered
 
-          # Replace {{ACCOUNT_ID}} in the template and wrap it
+          # Replace placeholders
           sed "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g" templates/dashboard_template.json > rendered/tmp.json
 
-          # Wrap the entire result in a "dashboard" object
-          echo "{\"dashboard\":$(cat rendered/tmp.json)}" > rendered/dashboard.json
+          # Escape the JSON so it can be used inside GraphQL
+          DASHBOARD_JSON=$(cat rendered/tmp.json | jq -c '.')
 
-      - name: Deploy dashboard to New Relic
+          # Create the final GraphQL payload
+          cat <<EOF > rendered/payload.json
+{
+  "query": "mutation { dashboardCreate(accountId: ${ACCOUNT_ID}, dashboard: ${DASHBOARD_JSON}) { entityResult { guid } errors { description } } }"
+}
+EOF
+
+      - name: Deploy via NerdGraph
         run: |
           curl --request POST \
-            --url https://api.newrelic.com/v2/dashboards.json \
-            --header "X-Api-Key: $API_KEY" \
+            --url https://api.newrelic.com/graphql \
             --header "Content-Type: application/json" \
-            --data @rendered/dashboard.json
+            --header "API-Key: $API_KEY" \
+            --data @rendered/payload.json
