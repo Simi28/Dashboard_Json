@@ -16,8 +16,8 @@
             "facet": { "showOtherSeries": false },
             "nrqlQueries": [
               {
-                "accountIds": [{{ACCOUNT_ID}}],
-                "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion(GBs)' WHERE string(accountId()) IN ({{accountID}}) since 6 months ago"
+                "accountIds": [{{ACCOUNT_IDS}}],
+                "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion(GBs)' WHERE string(accountId()) IN ({{accountID}}) SINCE 6 months ago"
               }
             ],
             "platformOptions": { "ignoreTimeRange": false }
@@ -32,8 +32,8 @@
             "facet": { "showOtherSeries": false },
             "nrqlQueries": [
               {
-                "accountIds": [{{ACCOUNT_ID}}],
-                "query": "FROM NrConsumption SELECT sum(GigabytesIngested)  SINCE 6 months ago FACET monthOf(timestamp) LIMIT MAX UNTIL today WHERE string(accountId()) IN ({{accountID}})"
+                "accountIds": [{{ACCOUNT_IDS}}],
+                "query": "FROM NrConsumption SELECT sum(GigabytesIngested) SINCE 6 months ago FACET monthOf(timestamp) LIMIT MAX UNTIL today WHERE string(accountId()) IN ({{accountID}})"
               }
             ],
             "platformOptions": { "ignoreTimeRange": false }
@@ -49,7 +49,7 @@
             "legend": { "enabled": true },
             "nrqlQueries": [
               {
-                "accountIds": [{{ACCOUNT_ID}}],
+                "accountIds": [{{ACCOUNT_IDS}}],
                 "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion(GBs)' FACET usageMetric WHERE string(accountId()) IN ({{accountID}}) SINCE 6 months ago"
               }
             ],
@@ -65,8 +65,8 @@
             "facet": { "showOtherSeries": false },
             "nrqlQueries": [
               {
-                "accountIds": [{{ACCOUNT_ID}}],
-                "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion(GBs)' WHERE string(accountId()) IN ({{accountID}}) SINCE 6 months ago FACET monthOf(timestamp) limit max"
+                "accountIds": [{{ACCOUNT_IDS}}],
+                "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion(GBs)' WHERE string(accountId()) IN ({{accountID}}) SINCE 6 months ago FACET monthOf(timestamp) LIMIT MAX"
               }
             ],
             "platformOptions": { "ignoreTimeRange": false }
@@ -90,7 +90,7 @@
             },
             "nrqlQueries": [
               {
-                "accountIds": [{{ACCOUNT_ID}}],
+                "accountIds": [{{ACCOUNT_IDS}}],
                 "query": "FROM NrConsumption SELECT sum(GigabytesIngested) AS 'Total Ingestion (GBs)' WHERE monthOf(timestamp) != (FROM NrConsumption SELECT latest(monthOf(timestamp))) SINCE 6 months ago FACET monthOf(timestamp) TIMESERIES 3 days LIMIT MAX UNTIL today WHERE string(accountId()) IN ({{accountID}})"
               }
             ],
@@ -113,7 +113,7 @@
         }
       ],
       "nrqlQuery": {
-        "accountIds": [{{ACCOUNT_ID}}],
+        "accountIds": [{{ACCOUNT_IDS}}],
         "query": "FROM NrComputeUsage SELECT uniques(accountID())"
       },
       "options": {
