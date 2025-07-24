@@ -19,28 +19,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Replace placeholders in template
+      - name: Replace placeholders in dashboard template
         run: |
           mkdir -p rendered
           sed "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g" templates/dashboard_template.json > rendered/dashboard.json
 
-      - name: Build NerdGraph mutation
+      - name: Build GraphQL payload
         run: |
-          RAW_JSON=$(cat rendered/dashboard.json)
+          RAW_JSON=$(cat rendered/dashboard.json | jq -c .)
 
-          # Compose raw GraphQL mutation string
-          MUTATION="mutation {
-            dashboardCreate(accountId: ${ACCOUNT_ID}, dashboard: ${RAW_JSON}) {
-              entityResult { guid }
-              errors { description }
-            }
-          }"
-
-          # Convert raw string into escaped JSON payload using jq
-          echo "{\"query\": $(jq -Rs . <<< \"$MUTATION\") }" > rendered/payload.json
+          # Build one-liner GraphQL query
+          echo "{\"query\":\"mutation { dashboardCreate(accountId: ${ACCOUNT_ID}, dashboard: ${RAW_JSON}) { entityResult { guid } errors { description } } }\"}" > rendered/payload.json
 
       - name: Deploy via NerdGraph
         run: |
+          echo "🚀 Sending payload to New Relic NerdGraph..."
           curl --request POST \
             --url https://api.newrelic.com/graphql \
             --header "Content-Type: application/json" \
