@@ -14,12 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download dashboard GUID artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dashboard-guid
-          path: rendered
-
       - name: Read dashboard GUID
         id: get-guid
         run: |
