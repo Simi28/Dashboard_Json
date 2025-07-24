@@ -1,11 +1,7 @@
 name: Deploy Dashboard via NerdGraph
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - 'customer/**'
+  workflow_dispatch:  
 
 jobs:
   deploy:
@@ -14,23 +10,18 @@ jobs:
     env:
       API_KEY: ${{ secrets.API_KEY }}
       ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-      ACCOUNT_IDS: ${{ secrets.ACCOUNT_IDS }}
+      ACCOUNT_IDS: ${{ secrets.ACCOUNT_IDS }}  # Comma-separated list like: 12345,67890
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install jq
-        run: sudo apt-get install jq -y
-
       - name: Replace placeholders in template
         run: |
           mkdir -p rendered
-          sed -e "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g" \
-              -e "s/{{ACCOUNT_IDS}}/${ACCOUNT_IDS}/g" \
-              templates/dashboard_template.json > rendered/dashboard.json
+          sed "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g; s/{{ACCOUNT_IDS}}/${ACCOUNT_IDS}/g" templates/dashboard_template.json > rendered/dashboard.json
 
-      - name: Create GraphQL payload using variables
+      - name: Create GraphQL payload
         run: |
           DASHBOARD=$(jq . rendered/dashboard.json)
           ACCOUNT_ID_INT=$(echo "$ACCOUNT_ID" | jq -r '. | tonumber')
