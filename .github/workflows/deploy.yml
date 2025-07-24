@@ -26,22 +26,25 @@ jobs:
 
       - name: Create GraphQL payload using variables
         run: |
-          DASHBOARD=$(cat rendered/dashboard.json | jq .)
+          DASHBOARD=$(jq . rendered/dashboard.json)
           ACCOUNT_ID_INT=$(echo "$ACCOUNT_ID" | jq -r '. | tonumber')
 
-          cat > rendered/payload.json <<EOF
-{
-  "query": "mutation CreateDashboard(\$accountId: Int!, \$dashboard: DashboardInput!) { dashboardCreate(accountId: \$accountId, dashboard: \$dashboard) { entityResult { guid } errors { description } } }",
-  "variables": {
-    "accountId": $ACCOUNT_ID_INT,
-    "dashboard": $DASHBOARD
-  }
-}
-EOF
+          echo "{
+            \"query\": \"mutation CreateDashboard(\$accountId: Int!, \$dashboard: DashboardInput!) {
+              dashboardCreate(accountId: \$accountId, dashboard: \$dashboard) {
+                entityResult { guid }
+                errors { description }
+              }
+            }\",
+            \"variables\": {
+              \"accountId\": $ACCOUNT_ID_INT,
+              \"dashboard\": $DASHBOARD
+            }
+          }" > rendered/payload.json
 
       - name: Deploy to New Relic via NerdGraph
         run: |
-          echo "🚀 Deploying dashboard..."
+          echo "🚀 Deploying dashboard to New Relic NerdGraph..."
           curl --request POST \
             --url https://api.newrelic.com/graphql \
             --header "Content-Type: application/json" \
