@@ -22,13 +22,22 @@ jobs:
       - name: Replace placeholders in template
         run: |
           mkdir -p rendered
-          sed "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g" templates/dashboard_template.json > rendered/tmp.json
+          sed "s/{{ACCOUNT_ID}}/${ACCOUNT_ID}/g" templates/dashboard_template.json > rendered/dashboard.json
 
       - name: Build NerdGraph mutation
         run: |
-          DASHBOARD_JSON=$(jq -c '.' < rendered/tmp.json)
+          RAW_JSON=$(cat rendered/dashboard.json)
 
-          echo "{\"query\":\"mutation { dashboardCreate(accountId: ${ACCOUNT_ID}, dashboard: ${DASHBOARD_JSON//\"/\\\"}) { entityResult { guid } errors { description } } }\"}" > rendered/payload.json
+          # Compose raw GraphQL mutation string
+          MUTATION="mutation {
+            dashboardCreate(accountId: ${ACCOUNT_ID}, dashboard: ${RAW_JSON}) {
+              entityResult { guid }
+              errors { description }
+            }
+          }"
+
+          # Convert raw string into escaped JSON payload using jq
+          echo "{\"query\": $(jq -Rs . <<< \"$MUTATION\") }" > rendered/payload.json
 
       - name: Deploy via NerdGraph
         run: |
