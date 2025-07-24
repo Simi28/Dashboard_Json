@@ -1,7 +1,7 @@
 name: Deploy Dashboard via NerdGraph
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -46,4 +46,18 @@ jobs:
             --url https://api.newrelic.com/graphql \
             --header "Content-Type: application/json" \
             --header "API-Key: $API_KEY" \
-            --data @rendered/payload.json
+            --data @rendered/payload.json \
+            --silent --show-error --fail > rendered/response.json
+
+      - name: Save dashboard GUID
+        run: |
+          jq -r '.data.dashboardCreate.entityResult.guid' rendered/response.json > rendered/guid.txt
+          echo "✅ Dashboard GUID saved to rendered/guid.txt"
+
+      - name: Commit GUID to repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add rendered/guid.txt
+          git commit -m "Update dashboard GUID"
+          git push || echo "No changes to commit"
