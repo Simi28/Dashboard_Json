@@ -1,0 +1,49 @@
+name: Delete Dashboard via NerdGraph
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    env:
+      API_KEY: ${{ secrets.API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download dashboard GUID artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-guid
+          path: rendered
+
+      - name: Read dashboard GUID
+        id: get-guid
+        run: |
+          GUID=$(cat rendered/guid.txt)
+          echo "GUID=$GUID" >> $GITHUB_ENV
+
+      - name: Create delete mutation payload
+        run: |
+          echo "{
+            \"query\": \"mutation DeleteDashboard(\$guid: EntityGuid!) {
+              dashboardDelete(guid: \$guid) {
+                status
+              }
+            }\",
+            \"variables\": {
+              \"guid\": \"${GUID}\"
+            }
+          }" > rendered/delete_payload.json
+
+      - name: Delete dashboard via NerdGraph
+        run: |
+          echo "🗑️ Deleting dashboard with GUID: ${GUID}"
+          curl --request POST \
+            --url https://api.newrelic.com/graphql \
+            --header "Content-Type: application/json" \
+            --header "API-Key: $API_KEY" \
+            --data @rendered/delete_payload.json
