@@ -62,8 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-
-          # Set the remote to include the PAT so it can push
+          
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${REPO}
 
           git add rendered/guid.txt
@@ -72,5 +71,5 @@ jobs:
             echo "✅ Nothing to commit"
           else
             git commit -m "Update dashboard GUID"
-            git push origin HEAD:main
+            git push origin HEAD:${{ github.ref_name }}
           fi
