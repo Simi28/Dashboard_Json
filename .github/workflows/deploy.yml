@@ -56,12 +56,15 @@ jobs:
           echo "✅ Dashboard GUID saved to rendered/guid.txt"
 
       - name: Commit GUID to repo
+        env:
+          REPO: ${{ github.repository }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           # Set the remote to include the PAT so it can push
-          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${REPO}
 
           git add rendered/guid.txt
 
