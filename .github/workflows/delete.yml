@@ -2,6 +2,11 @@ name: Delete Dashboard via NerdGraph
 
 on:
   workflow_dispatch:
+    inputs:
+      region:
+        description: 'Region (us or eu)'
+        required: true
+        default: 'us'
 
 jobs:
   delete:
@@ -13,6 +18,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set NerdGraph API URL based on region
+        run: |
+          if [[ "${{ github.event.inputs.region }}" == "eu" ]]; then
+            echo "NERDGRAPH_URL=https://api.eu.newrelic.com/graphql" >> $GITHUB_ENV
+          else
+            echo "NERDGRAPH_URL=https://api.newrelic.com/graphql" >> $GITHUB_ENV
+          fi
 
       - name: Read dashboard GUID
         id: get-guid
@@ -37,7 +50,7 @@ jobs:
         run: |
           echo "🗑️ Deleting dashboard with GUID: ${GUID}"
           curl --request POST \
-            --url https://api.newrelic.com/graphql \
+            --url $NERDGRAPH_URL \
             --header "Content-Type: application/json" \
             --header "API-Key: $API_KEY" \
             --data @rendered/delete_payload.json
